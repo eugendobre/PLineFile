@@ -32,7 +32,7 @@ namespace PLineFile
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: I cannot opne the line. Original error: " + ex.Message);
+                    MessageBox.Show("Error: I cannot find the file. Original error: " + ex.Message);
                 }
             }
         }
