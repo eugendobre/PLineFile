@@ -36,11 +36,7 @@ namespace PLineFile
             char[] splitChar = { ' ' };
             string[] strArr = null;
             Point3dCollection points = new Point3dCollection();
-            Polyline3d poly = new Polyline3d();
-
-            //get document object to access the database of the document
-            Document acDoc = Application.DocumentManager.MdiActiveDocument;
-            Database acDB = acDoc.Database;
+            
 
             OpenFile selectedFile = new OpenFile();
             selectedFile.SelectFile();
@@ -72,38 +68,56 @@ namespace PLineFile
                 }
                 else
                 {
-                    try
-                    {
-                        //if line == "" or line==null draw thw polyline and pst3D=null
-                        using (Transaction trans = acDB.TransactionManager.StartTransaction())
-                        {
+                    CreatePolyLine(points);
+                    points = new Point3dCollection();
 
-                            BlockTable acBlkTbl = (BlockTable)trans.GetObject(acDB.BlockTableId, OpenMode.ForRead, false);
-                            BlockTableRecord acBlkTblRec = (BlockTableRecord)trans.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite, true);
-
-                            acBlkTblRec.AppendEntity(poly);
-                            trans.AddNewlyCreatedDBObject(poly, true);
-                            foreach (Point3d pt in points)
-                            {
-                                PolylineVertex3d vex3D = new PolylineVertex3d(pt);
-                                poly.AppendVertex(vex3D);
-                                trans.AddNewlyCreatedDBObject(vex3D, true);
-                            }
-                            poly.Closed = false;
-                            // poly.ColorIndex = 1;
-                            points = new Point3dCollection();
-
-                            trans.Commit();
-                        }
-                    }
-                    catch (System.Exception ex)
-                    {
-
-                        Application.ShowAlertDialog(ex.Message);
-                    }
                 }
             }
+        }
 
+
+        /// <summary>
+        /// method used to creat the 3DPolyLine
+        /// </summary>
+        /// <param name="points">Colection of 3D points </param>
+        private void CreatePolyLine(Point3dCollection points)
+        {
+
+            Polyline3d poly = new Polyline3d();
+
+            //get document object to access the database of the document
+            Document acDoc = Application.DocumentManager.MdiActiveDocument;
+            Database acDB = acDoc.Database;
+
+            try
+            {
+                //if line == "" or line==null draw thw polyline and pst3D=null
+                using (Transaction trans = acDB.TransactionManager.StartTransaction())
+                {
+
+                    BlockTable acBlkTbl = (BlockTable)trans.GetObject(acDB.BlockTableId, OpenMode.ForRead, false);
+                    BlockTableRecord acBlkTblRec = (BlockTableRecord)trans.GetObject(acBlkTbl[BlockTableRecord.ModelSpace], OpenMode.ForWrite, true);
+
+                    acBlkTblRec.AppendEntity(poly);
+                    trans.AddNewlyCreatedDBObject(poly, true);
+                    foreach (Point3d pt in points)
+                    {
+                        PolylineVertex3d vex3D = new PolylineVertex3d(pt);
+                        poly.AppendVertex(vex3D);
+                        trans.AddNewlyCreatedDBObject(vex3D, true);
+                    }
+                    poly.Closed = false;
+                    // poly.ColorIndex = 1;
+                   
+
+                    trans.Commit();
+                }
+            }
+            catch (System.Exception ex)
+            {
+
+                Application.ShowAlertDialog(ex.Message);
+            }
         }
 
         /// <summary>
